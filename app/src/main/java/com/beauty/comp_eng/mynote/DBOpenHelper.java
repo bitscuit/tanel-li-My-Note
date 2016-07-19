@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 // class to create the sqlite database
-public class DBOpenHelper extends SQLiteOpenHelper{
+public class DBOpenHelper extends SQLiteOpenHelper {
 
     // database name and version
     // name needs .db
@@ -22,10 +22,10 @@ public class DBOpenHelper extends SQLiteOpenHelper{
     // SQL to create table
     private static final String TABLE_CREATE =
             "CREATE TABLE " + TABLE_NOTES + " (" +
-            NOTE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            NOTE_BODY + " TEXT, " +
-            NOTE_CREATED + " TEXT default CURRENT_TIMESTAMP" +
-            ")";
+                    NOTE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    NOTE_BODY + " TEXT, " +
+                    NOTE_CREATED + " TEXT default CURRENT_TIMESTAMP" +
+                    ")";
 
     // constructor
     public DBOpenHelper(Context context) {

@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MyNote.iml" filepath="$PROJECT_DIR$/MyNote.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tanel-li-My-Note.iml" filepath="$PROJECT_DIR$/tanel-li-My-Note.iml" />
     </modules>
   </component>
 </project>

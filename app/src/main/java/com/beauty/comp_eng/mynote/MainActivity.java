@@ -9,6 +9,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+// THIS IS TO TEST THE UPDATE PROJECT OPTIONS
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int EDITOR_REQUEST_CODE = 1001;

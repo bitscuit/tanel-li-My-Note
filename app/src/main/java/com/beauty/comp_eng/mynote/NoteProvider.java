@@ -47,8 +47,10 @@ public class NoteProvider extends ContentProvider {
 
     @Nullable
     @Override
+    // strings is projection. s is selection to filter data, strings1 is selection args, s1 is sort order
     public Cursor query(Uri uri, String[] strings, String s, String[] strings1, String s1) {
-        return null;
+        return db.query(DBOpenHelper.TABLE_NOTES, DBOpenHelper.ALL_COLUMNS,
+                s, null, null, null, DBOpenHelper.NOTE_CREATED + "DESC");
     }
 
     @Nullable
@@ -60,16 +62,18 @@ public class NoteProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
-        return null;
+        long id = db.insert(DBOpenHelper.TABLE_NOTES,
+                null, contentValues);
+        return Uri.parse(BASE_PATH + "/" + id);
     }
 
     @Override
     public int delete(Uri uri, String s, String[] strings) {
-        return 0;
+        return db.delete(DBOpenHelper.TABLE_NOTES, s, strings);
     }
 
     @Override
     public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
-        return 0;
+        return db.update(DBOpenHelper.TABLE_NOTES, contentValues, s, strings);
     }
 }

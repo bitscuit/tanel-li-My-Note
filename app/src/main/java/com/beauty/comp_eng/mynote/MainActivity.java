@@ -1,10 +1,13 @@
 package com.beauty.comp_eng.mynote;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +24,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        insertNote("New note");
+    }
+
+    private void insertNote(String noteBody) {
+        ContentValues values = new ContentValues();
+        values.put(DBOpenHelper.NOTE_BODY, noteBody);
+        Uri noteUri = getContentResolver().insert(NoteProvider.CONTENT_URI, values);
+        Log.d("MainActivity", "Inserted note " + noteUri.getLastPathSegment());
     }
 
     @Override

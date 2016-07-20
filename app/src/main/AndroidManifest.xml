@@ -27,6 +27,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.beauty.comp_eng.mynote.MainActivity" />
         </activity>
+
+        <provider
+            android:name=".NoteProvider"
+            android:authorities="com.beauty.comp_eng.mynote.noteprovider"
+            android:exported="false" />
     </application>
 
 </manifest>

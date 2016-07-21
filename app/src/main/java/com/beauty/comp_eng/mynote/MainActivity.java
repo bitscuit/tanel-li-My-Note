@@ -2,7 +2,7 @@ package com.beauty.comp_eng.mynote;
 
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CursorAdapter;
+import android.widget.ListView;
 
 // THIS IS TO TEST THE UPDATE PROJECT OPTIONS
 
@@ -25,7 +27,24 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // TODO: remove this later
         insertNote("New note");
+
+        // cursor represents the data in the database
+        Cursor cursor = getContentResolver().query(NoteProvider.CONTENT_URI,
+                DBOpenHelper.ALL_COLUMNS, null, null, null, null);
+
+        String[] from = {DBOpenHelper.NOTE_BODY};
+        // text view to store note body in
+        int[] to = {android.R.id.text1};
+
+        // cursorAdapter exposes data in cursor to list view
+        CursorAdapter cursorAdapter = new android.widget.SimpleCursorAdapter(this,
+                android.R.layout.simple_list_item_1, cursor, from, to, 0);
+
+        // list view to show all notes in database
+        ListView list = (ListView) findViewById(android.R.id.list);
+        list.setAdapter(cursorAdapter);
     }
 
     private void insertNote(String noteBody) {

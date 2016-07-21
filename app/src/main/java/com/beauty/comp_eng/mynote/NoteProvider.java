@@ -50,7 +50,7 @@ public class NoteProvider extends ContentProvider {
     // strings is projection. s is selection to filter data, strings1 is selection args, s1 is sort order
     public Cursor query(Uri uri, String[] strings, String s, String[] strings1, String s1) {
         return db.query(DBOpenHelper.TABLE_NOTES, DBOpenHelper.ALL_COLUMNS,
-                s, null, null, null, DBOpenHelper.NOTE_CREATED + "DESC");
+                s, null, null, null, DBOpenHelper.NOTE_CREATED + " DESC");
     }
 
     @Nullable

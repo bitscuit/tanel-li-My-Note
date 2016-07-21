@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -16,9 +19,12 @@ import android.widget.ListView;
 
 // THIS IS TO TEST THE UPDATE PROJECT OPTIONS
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int EDITOR_REQUEST_CODE = 1001;
+
+    private CursorAdapter cursorAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,21 +36,20 @@ public class MainActivity extends AppCompatActivity {
         // TODO: remove this later
         insertNote("New note");
 
-        // cursor represents the data in the database
-        Cursor cursor = getContentResolver().query(NoteProvider.CONTENT_URI,
-                DBOpenHelper.ALL_COLUMNS, null, null, null, null);
-
         String[] from = {DBOpenHelper.NOTE_BODY};
         // text view to store note body in
         int[] to = {android.R.id.text1};
 
         // cursorAdapter exposes data in cursor to list view
-        CursorAdapter cursorAdapter = new android.widget.SimpleCursorAdapter(this,
-                android.R.layout.simple_list_item_1, cursor, from, to, 0);
+        cursorAdapter = new android.widget.SimpleCursorAdapter(this,
+                android.R.layout.simple_list_item_1, null, from, to, 0);
 
         // list view to display all notes in database
         ListView list = (ListView) findViewById(android.R.id.list);
         list.setAdapter(cursorAdapter);
+        // video had getLoaderManager..., but the initLoader() had a different third arg
+        // which gave an erro when passing "this", so had to use support library
+        getSupportLoaderManager().initLoader(0, null, this);
     }
 
     private void insertNote(String noteBody) {
@@ -79,5 +84,35 @@ public class MainActivity extends AppCompatActivity {
     public void addNewNote(View view) {
         Intent openEditNote = new Intent(this, EditNote.class);
         startActivityForResult(openEditNote, EDITOR_REQUEST_CODE);
+    }
+
+    /**
+     * Instantiate and return a new Loader for the given ID.
+     *
+     * @param id   The ID whose loader is to be created.
+     * @param args Any arguments supplied by the caller.
+     * @return Return a new Loader instance that is ready to start loading.
+     */
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(this, NoteProvider.CONTENT_URI, null, null, null, null);
+    }
+
+    // check api for description. auto-generated java doc had and error
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        cursorAdapter.swapCursor(data);
+    }
+
+    /**
+     * Called when a previously created loader is being reset, and thus
+     * making its data unavailable.  The application should at this point
+     * remove any references it has to the Loader's data.
+     *
+     * @param loader The Loader that is being reset.
+     */
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        cursorAdapter.swapCursor(null);
     }
 }

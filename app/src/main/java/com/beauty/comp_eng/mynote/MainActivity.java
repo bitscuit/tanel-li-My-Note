@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         CursorAdapter cursorAdapter = new android.widget.SimpleCursorAdapter(this,
                 android.R.layout.simple_list_item_1, cursor, from, to, 0);
 
-        // list view to show all notes in database
+        // list view to display all notes in database
         ListView list = (ListView) findViewById(android.R.id.list);
         list.setAdapter(cursorAdapter);
     }

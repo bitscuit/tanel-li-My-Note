@@ -36,13 +36,8 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        String[] from = {DBOpenHelper.NOTE_BODY};
-        // text view to store note body in
-        int[] to = {R.id.tvNote};
-
         // cursorAdapter exposes data in cursor to list view
-        cursorAdapter = new android.widget.SimpleCursorAdapter(this,
-                R.layout.list_item, null, from, to, 0);
+        cursorAdapter = new NoteCursorAdapter(this, null, 0);
 
         // list view to display all notes in database
         ListView list = (ListView) findViewById(android.R.id.list);

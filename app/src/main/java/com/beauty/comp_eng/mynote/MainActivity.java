@@ -38,11 +38,11 @@ public class MainActivity extends AppCompatActivity
 
         String[] from = {DBOpenHelper.NOTE_BODY};
         // text view to store note body in
-        int[] to = {android.R.id.text1};
+        int[] to = {R.id.tvNote};
 
         // cursorAdapter exposes data in cursor to list view
         cursorAdapter = new android.widget.SimpleCursorAdapter(this,
-                android.R.layout.simple_list_item_1, null, from, to, 0);
+                R.layout.list_item, null, from, to, 0);
 
         // list view to display all notes in database
         ListView list = (ListView) findViewById(android.R.id.list);

@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -45,6 +46,17 @@ public class MainActivity extends AppCompatActivity
         // video had getLoaderManager..., but the initLoader() had a different third arg
         // which gave an erro when passing "this", so had to use support library
         getSupportLoaderManager().initLoader(0, null, this);
+
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            // Changed the 3rd parameter to position and 4th parameter to id
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, EditNote.class);
+                Uri uri = Uri.parse(NoteProvider.CONTENT_URI + "/" + id);   // returns primary key value
+                intent.putExtra(NoteProvider.CONTENT_ITEM_TYPE, uri);
+                startActivityForResult(intent, EDITOR_REQUEST_CODE);
+            }
+        });
     }
 
     private void insertNote(String noteBody) {
@@ -141,5 +153,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         cursorAdapter.swapCursor(null);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == EDITOR_REQUEST_CODE && resultCode == RESULT_OK) {
+            restartLoader();    // reloads and refreshed data from database
+        }
     }
 }

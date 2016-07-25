@@ -29,6 +29,8 @@ public class NoteProvider extends ContentProvider {
     // Uri matcher to parse a URI and then determine which operation has been requested
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
+    public static final String CONTENT_ITEM_TYPE = "note";
+
     // static initializer for UriMatcher
     static {
         uriMatcher.addURI(AUTHORITY, BASE_PATH, NOTES);
@@ -48,9 +50,16 @@ public class NoteProvider extends ContentProvider {
     @Nullable
     @Override
     // strings is projection. s is selection to filter data, strings1 is selection args, s1 is sort order
-    public Cursor query(Uri uri, String[] strings, String s, String[] strings1, String s1) {
+    // changed s to selection
+    public Cursor query(Uri uri, String[] strings, String selection, String[] strings1, String s1) {
+
+        // Tells you if the uri matches the NOTES_ID uri, you only want a single row from the database
+        if (uriMatcher.match(uri) == NOTES_ID) {
+            selection = DBOpenHelper.NOTE_ID + "=" + uri.getLastPathSegment();
+        }
+
         return db.query(DBOpenHelper.TABLE_NOTES, DBOpenHelper.ALL_COLUMNS,
-                s, null, null, null, DBOpenHelper.NOTE_CREATED + " DESC");
+                selection, null, null, null, DBOpenHelper.NOTE_CREATED + " DESC");
     }
 
     @Nullable

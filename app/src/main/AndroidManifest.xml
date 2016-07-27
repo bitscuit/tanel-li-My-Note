@@ -20,7 +20,6 @@
         </activity>
         <activity
             android:name=".EditNoteActivity"
-            android:label=""
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data

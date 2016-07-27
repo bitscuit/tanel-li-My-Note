@@ -19,8 +19,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".EditNote"
-            android:label="@string/title_activity_edit_note"
+            android:name=".EditNoteActivity"
+            android:label=""
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data

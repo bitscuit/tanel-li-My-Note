@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             // Changed the 3rd parameter to position and 4th parameter to id
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Intent intent = new Intent(MainActivity.this, EditNote.class);
+                Intent intent = new Intent(MainActivity.this, EditNoteActivity.class);
                 Uri uri = Uri.parse(NoteProvider.CONTENT_URI + "/" + id);   // returns primary key value
                 intent.putExtra(NoteProvider.CONTENT_ITEM_TYPE, uri);
                 startActivityForResult(intent, EDITOR_REQUEST_CODE);
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void addNewNote(View view) {
-        Intent openEditNote = new Intent(this, EditNote.class);
+        Intent openEditNote = new Intent(this, EditNoteActivity.class);
         startActivityForResult(openEditNote, EDITOR_REQUEST_CODE);
     }
 

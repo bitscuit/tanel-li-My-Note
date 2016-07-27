@@ -7,11 +7,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class EditNote extends AppCompatActivity {
+public class EditNoteActivity extends AppCompatActivity {
 
     private String action;
     private EditText editor;
@@ -47,9 +48,18 @@ public class EditNote extends AppCompatActivity {
             oldText = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_BODY));
             cursor.moveToFirst();   // retrieve data
             oldText = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_BODY));  // gets text of selected note
-            editor.setText(oldText);    // sets the text in EditNote activity to the old text for editing
+            editor.setText(oldText);    // sets the text in EditNoteActivity activity to the old text for editing
             editor.requestFocus();      // sends cursor to end of text
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (action.equals(Intent.ACTION_EDIT)) {
+            // Inflate the menu; this adds items to the action bar if it is present.
+            getMenuInflater().inflate(R.menu.menu_edit_note, menu);
+        }
+        return true;
     }
 
     @Override
@@ -60,6 +70,9 @@ public class EditNote extends AppCompatActivity {
             // When toolbar back button is pressed
             case android.R.id.home:
                 finishEditing();
+                break;
+            case R.id.action_delete:
+                deleteNote();
                 break;
         }
 
@@ -82,7 +95,7 @@ public class EditNote extends AppCompatActivity {
                 break;
             case Intent.ACTION_EDIT:
                 if (newText.length() == 0) {
-//                    deleteNote();
+                    deleteNote();
                 } else if (oldText.equals(newText)) {
                     setResult(RESULT_CANCELED);     // if there are no changes, send back the RESULT_CANCELLED value
                 } else {
@@ -90,6 +103,13 @@ public class EditNote extends AppCompatActivity {
                 }
         }
         finish();   // finished with activity, then go to parent activity
+    }
+
+    private void deleteNote() {
+        getContentResolver().delete(NoteProvider.CONTENT_URI, noteFilter, null);
+        Toast.makeText(this, "Note Deleted", Toast.LENGTH_SHORT);
+        setResult(RESULT_OK);
+        finish();
     }
 
     private void updateNote(String noteText) {

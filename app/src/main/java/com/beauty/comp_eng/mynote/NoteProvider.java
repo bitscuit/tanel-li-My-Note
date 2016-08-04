@@ -29,6 +29,7 @@ public class NoteProvider extends ContentProvider {
     // Uri matcher to parse a URI and then determine which operation has been requested
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
+    // figure out purpose of this
     public static final String CONTENT_ITEM_TYPE = "note";
 
     // static initializer for UriMatcher

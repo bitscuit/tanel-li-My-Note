@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int EDITOR_REQUEST_CODE = 1001;
-
     private CursorAdapter cursorAdapter;
 
     @Override
@@ -35,7 +34,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //setSupportActionBar(toolbar);
 
         // cursorAdapter exposes data in cursor to list view
         cursorAdapter = new NoteCursorAdapter(this, null, 0);
@@ -44,8 +43,10 @@ public class MainActivity extends AppCompatActivity
         ListView list = (ListView) findViewById(android.R.id.list);
         list.setAdapter(cursorAdapter);
         // video had getLoaderManager..., but the initLoader() had a different third arg
-        // which gave an erro when passing "this", so had to use support library
+        // which gave an error when passing "this", so had to use support library
         getSupportLoaderManager().initLoader(0, null, this);
+
+        registerForContextMenu(list);
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -55,6 +56,32 @@ public class MainActivity extends AppCompatActivity
                 Uri uri = Uri.parse(NoteProvider.CONTENT_URI + "/" + id);   // returns primary key value
                 intent.putExtra(NoteProvider.CONTENT_ITEM_TYPE, uri);
                 startActivityForResult(intent, EDITOR_REQUEST_CODE);
+            }
+        });
+
+        list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                           int pos, final long id) {
+                final AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
+                b.setIcon(android.R.drawable.ic_dialog_alert);
+                b.setMessage("Delete?");
+                b.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Uri uri = Uri.parse(NoteProvider.CONTENT_URI + "/" + id);   // returns primary key value
+                        getContentResolver().delete(uri, DBOpenHelper.NOTE_ID + "=" + id, null);
+                        restartLoader();
+                    }
+                });
+                b.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+
+                    }
+                });
+
+                b.show();
+
+                return true;
             }
         });
     }

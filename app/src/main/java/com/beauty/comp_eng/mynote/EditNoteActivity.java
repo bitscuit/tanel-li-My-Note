@@ -27,8 +27,9 @@ public class EditNoteActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         editor = (EditText) findViewById(R.id.editText);
+
+        editor.requestFocus();
 
         Intent intent = getIntent();
         // Allows you to pass complex object as an intent extra

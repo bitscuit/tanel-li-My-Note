@@ -50,7 +50,10 @@ public class EditNoteActivity extends AppCompatActivity {
             oldText = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_BODY));  // gets text of selected note
             editor.setText(oldText);    // sets the text in EditNoteActivity activity to the old text for editing
             editor.requestFocus();      // sends cursor to end of text
+            cursor.close();
         }
+
+
     }
 
     @Override

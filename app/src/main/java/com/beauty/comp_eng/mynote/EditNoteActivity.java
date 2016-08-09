@@ -29,7 +29,7 @@ public class EditNoteActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         editor = (EditText) findViewById(R.id.editText);
-
+        editor.requestFocus();
         Intent intent = getIntent();
         // Allows you to pass complex object as an intent extra
         Uri uri = intent.getParcelableExtra(NoteProvider.CONTENT_ITEM_TYPE);
@@ -107,7 +107,7 @@ public class EditNoteActivity extends AppCompatActivity {
 
     private void deleteNote() {
         getContentResolver().delete(NoteProvider.CONTENT_URI, noteFilter, null);
-        Toast.makeText(this, "Note Deleted", Toast.LENGTH_SHORT);
+        Toast.makeText(this, "Note Deleted", Toast.LENGTH_SHORT).show();
         setResult(RESULT_OK);
         finish();
     }

@@ -12,7 +12,6 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -57,13 +56,39 @@ public class MainActivity extends AppCompatActivity
                 startActivityForResult(intent, EDITOR_REQUEST_CODE);
             }
         });
+
+        list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                           int pos, final long id) {
+                final AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
+                b.setIcon(android.R.drawable.ic_dialog_alert);
+                b.setMessage("Delete?");
+                b.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Uri uri = Uri.parse(NoteProvider.CONTENT_URI + "/" + id);   // returns primary key value
+                        getContentResolver().delete(uri, DBOpenHelper.NOTE_ID + "=" + id, null);
+                        restartLoader();
+                    }
+                });
+                b.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+
+                    }
+                });
+
+                b.show();
+
+                return true;
+            }
+        });
     }
 
     private void insertNote(String noteBody) {
         ContentValues values = new ContentValues();
         values.put(DBOpenHelper.NOTE_BODY, noteBody);
         Uri noteUri = getContentResolver().insert(NoteProvider.CONTENT_URI, values);
-        Log.d("MainActivity", "Inserted note " + noteUri.getLastPathSegment());
+        //Log.d("MainActivity", "Inserted note " + noteUri.getLastPathSegment());
     }
 
     @Override

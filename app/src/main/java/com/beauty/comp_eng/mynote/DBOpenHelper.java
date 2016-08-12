@@ -10,21 +10,23 @@ public class DBOpenHelper extends SQLiteOpenHelper {
     // database name and version
     // name needs .db
     private static final String DATABASE_NAME = "notes.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // database table and columns
     // id will be primary key and content provider will expect it to have "_" in front
     public static final String TABLE_NOTES = "notes";
     public static final String NOTE_ID = "_id";
+    public static final String NOTE_TITLE = "noteTitle";
     public static final String NOTE_BODY = "noteBody";
     public static final String NOTE_CREATED = "noteCreated";
 
     public static final String[] ALL_COLUMNS =
-            {NOTE_ID, NOTE_BODY, NOTE_CREATED};
+            {NOTE_ID, NOTE_TITLE, NOTE_BODY, NOTE_CREATED};
     // SQL to create table
     private static final String TABLE_CREATE =
             "CREATE TABLE " + TABLE_NOTES + " (" +
                     NOTE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    NOTE_TITLE + " TEXT, " +
                     NOTE_BODY + " TEXT, " +
                     NOTE_CREATED + " TEXT default CURRENT_TIMESTAMP" +
                     ")";
@@ -45,7 +47,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
     // user opens app first time after database updated
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS" + TABLE_NOTES);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTES);
         onCreate(sqLiteDatabase);
     }
 }

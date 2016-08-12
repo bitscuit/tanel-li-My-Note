@@ -15,9 +15,11 @@ import android.widget.Toast;
 public class EditNoteActivity extends AppCompatActivity {
 
     private String action;
-    private EditText editor;
+    private EditText noteEditor;
+    private EditText titleEditor;
     private String noteFilter;
     private String oldText;
+    private String oldTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,8 +30,10 @@ public class EditNoteActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        editor = (EditText) findViewById(R.id.editText);
-        editor.requestFocus();
+        noteEditor = (EditText) findViewById(R.id.editText);
+        noteEditor.requestFocus();
+        titleEditor = (EditText) findViewById(R.id.editTitle);
+        //titleEditor.setText("Hello World!");
         Intent intent = getIntent();
         // Allows you to pass complex object as an intent extra
         Uri uri = intent.getParcelableExtra(NoteProvider.CONTENT_ITEM_TYPE);
@@ -45,15 +49,15 @@ public class EditNoteActivity extends AppCompatActivity {
             // cursor gives you access to one record that matched requested primary key value
             Cursor cursor = getContentResolver().query(uri, DBOpenHelper.ALL_COLUMNS, noteFilter, null, null);
             cursor.moveToFirst();
-            oldText = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_BODY));
+//            oldText = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_BODY));
             cursor.moveToFirst();   // retrieve data
             oldText = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_BODY));  // gets text of selected note
-            editor.setText(oldText);    // sets the text in EditNoteActivity activity to the old text for editing
-            editor.requestFocus();      // sends cursor to end of text
+            noteEditor.setText(oldText);    // sets the text in EditNoteActivity activity to the old text for editing
+            oldTitle = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_TITLE));
+            titleEditor.setText(oldTitle);
+            noteEditor.requestFocus();      // sends cursor to end of text
             cursor.close();
         }
-
-
     }
 
     @Override
@@ -83,26 +87,39 @@ public class EditNoteActivity extends AppCompatActivity {
     }
 
     private void finishEditing() {
-        String newText = editor.getText().toString().trim();
+        String newText = noteEditor.getText().toString().trim();
+        String newTitle = titleEditor.getText().toString().trim();
 
         switch (action) {
             case Intent.ACTION_INSERT:
-                if (newText.length() == 0) {
+                if (newText.length() == 0 && newTitle.length() == 0) {
                     /* Sends message to MainActivity saying that operation that was requested is
                     cancelled if the length of the new note is 0.
                      */
                     setResult(RESULT_CANCELED);
                 } else {
-                    insertNote(newText);
+                    if (newText.length() == 0) {
+                        insertNote("", newTitle);
+                    } else if (newTitle.length() == 0) {
+                        insertNote(newText, "");
+                    } else {
+                        insertNote(newText, newTitle);
+                    }
                 }
                 break;
             case Intent.ACTION_EDIT:
-                if (newText.length() == 0) {
+                if (newText.length() == 0 && newTitle.length() == 0) {
                     deleteNote();
-                } else if (oldText.equals(newText)) {
+                } else if (oldText.equals(newText) && oldTitle.equals(newTitle)) {
                     setResult(RESULT_CANCELED);     // if there are no changes, send back the RESULT_CANCELLED value
                 } else {
-                    updateNote(newText);
+                    if (newText.length() == 0) {
+                        updateNote("", newTitle);
+                    } else if (newTitle.length() == 0) {
+                        updateNote(newText, "");
+                    } else {
+                        updateNote(newText, newTitle);
+                    }
                 }
         }
         finish();   // finished with activity, then go to parent activity
@@ -115,10 +132,10 @@ public class EditNoteActivity extends AppCompatActivity {
         finish();
     }
 
-    private void updateNote(String noteText) {
+    private void updateNote(String noteText, String titleText) {
         ContentValues values = new ContentValues();
         values.put(DBOpenHelper.NOTE_BODY, noteText);
-
+        values.put(DBOpenHelper.NOTE_TITLE, titleText);
         // reusing noteFilter value to make sure you're only updating 1 selected row
         getContentResolver().update(NoteProvider.CONTENT_URI, values, noteFilter, null);
         Toast.makeText(this, R.string.note_updated, Toast.LENGTH_SHORT).show();
@@ -126,9 +143,10 @@ public class EditNoteActivity extends AppCompatActivity {
     }
 
     // Code from MainActivity insertNote method
-    private void insertNote(String noteText) {
+    private void insertNote(String noteText, String titleText) {
         ContentValues values = new ContentValues();
         values.put(DBOpenHelper.NOTE_BODY, noteText);
+        values.put(DBOpenHelper.NOTE_TITLE, titleText);
         getContentResolver().insert(NoteProvider.CONTENT_URI, values);  // insert method returns Uri but we can ignore it
         setResult(RESULT_OK);   // means the operation that was requested is completed
     }

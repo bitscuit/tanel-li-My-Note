@@ -18,6 +18,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
     public static final String NOTE_ID = "_id";
     public static final String NOTE_TITLE = "noteTitle";
     public static final String NOTE_BODY = "noteBody";
+    public static final String NOTE_IMAGE = "noteImage";
     public static final String NOTE_CREATED = "noteCreated";
 
     public static final String[] ALL_COLUMNS =

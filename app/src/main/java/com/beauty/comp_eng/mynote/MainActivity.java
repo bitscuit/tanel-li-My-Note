@@ -17,17 +17,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.Toast;
 
 // THIS IS TO TEST THE UPDATE PROJECT OPTIONS
-
 public class MainActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int EDITOR_REQUEST_CODE = 1001;
-
+    private String layout = "list";
     private CursorAdapter cursorAdapter;
+    private GridView grid;
+    private ListView list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,13 +40,13 @@ public class MainActivity extends AppCompatActivity
 
         // cursorAdapter exposes data in cursor to list view
         cursorAdapter = new NoteCursorAdapter(this, null, 0);
-
-        // list view to display all notes in database
-        ListView list = (ListView) findViewById(android.R.id.list);
+        grid = (GridView) findViewById(R.id.gridView);
+        list = (ListView) findViewById(android.R.id.list);
         list.setAdapter(cursorAdapter);
         // video had getLoaderManager..., but the initLoader() had a different third arg
-        // which gave an erro when passing "this", so had to use support library
+        // which gave an error when passing "this", so had to use support library
         getSupportLoaderManager().initLoader(0, null, this);
+        list.bringToFront();
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -76,7 +78,42 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 });
+                b.show();
 
+                return true;
+            }
+        });
+
+        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            // Changed the 3rd parameter to position and 4th parameter to id
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, EditNoteActivity.class);
+                Uri uri = Uri.parse(NoteProvider.CONTENT_URI + "/" + id);   // returns primary key value
+                intent.putExtra(NoteProvider.CONTENT_ITEM_TYPE, uri);
+                startActivityForResult(intent, EDITOR_REQUEST_CODE);
+            }
+        });
+
+        grid.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                           int pos, final long id) {
+                final AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
+                b.setIcon(android.R.drawable.ic_dialog_alert);
+                b.setMessage("Delete?");
+                b.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Uri uri = Uri.parse(NoteProvider.CONTENT_URI + "/" + id);   // returns primary key value
+                        getContentResolver().delete(uri, DBOpenHelper.NOTE_ID + "=" + id, null);
+                        restartLoader();
+                    }
+                });
+                b.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+
+                    }
+                });
                 b.show();
 
                 return true;
@@ -103,12 +140,21 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.action_create_sample:
-                insertSampleData();
-                return true;
             case R.id.action_delete_all:
                 deleteAllNotes();
                 return true;
+            case R.id.action_switch_view:
+                if (layout.equals("grid")) {
+                    list.setAdapter(cursorAdapter);
+                    layout = "list";
+                    list.setVisibility(View.VISIBLE);
+                    grid.setVisibility(View.GONE);
+                } else {
+                    grid.setAdapter(cursorAdapter);
+                    layout = "grid";
+                    grid.setVisibility(View.VISIBLE);
+                    list.setVisibility(View.GONE);
+                }
         }
         return super.onOptionsItemSelected(item);
     }
@@ -132,13 +178,6 @@ public class MainActivity extends AppCompatActivity
                 .setPositiveButton(getString(android.R.string.yes), dialogClickListener)
                 .setNegativeButton(getString(android.R.string.no), dialogClickListener)
                 .show();
-    }
-
-    private void insertSampleData() {
-        insertNote("Simple note");
-        insertNote("Multiline\n note");
-        insertNote("Very long text with a lot of text that exceeds the length of the screen");
-        restartLoader();
     }
 
     private void restartLoader() {

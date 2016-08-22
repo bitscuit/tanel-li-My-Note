@@ -8,22 +8,29 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EditNoteActivity extends AppCompatActivity {
 
+    private static final int PICK_IMAGE_REQUEST = 1002;
     private String action;
     private EditText noteEditor;
     private EditText titleEditor;
@@ -43,7 +50,6 @@ public class EditNoteActivity extends AppCompatActivity {
         noteEditor = (EditText) findViewById(R.id.editText);
         noteEditor.requestFocus();
         titleEditor = (EditText) findViewById(R.id.editTitle);
-        //titleEditor.setText("Hello World!");
         Intent intent = getIntent();
         // Allows you to pass complex object as an intent extra
         Uri uri = intent.getParcelableExtra(NoteProvider.CONTENT_ITEM_TYPE);
@@ -59,8 +65,6 @@ public class EditNoteActivity extends AppCompatActivity {
             // cursor gives you access to one record that matched requested primary key value
             Cursor cursor = getContentResolver().query(uri, DBOpenHelper.ALL_COLUMNS, noteFilter, null, null);
             cursor.moveToFirst();
-//            oldText = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_BODY));
-            cursor.moveToFirst();   // retrieve data
             oldText = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_BODY));  // gets text of selected note
             noteEditor.setText(oldText);    // sets the text in EditNoteActivity activity to the old text for editing
             oldTitle = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_TITLE));
@@ -91,10 +95,44 @@ public class EditNoteActivity extends AppCompatActivity {
             case R.id.action_delete:
                 deleteNote();
                 break;
+            case R.id.action_attach_image:
+                attachImage();
+                break;
         }
 
         return true;    // true means you always handled the menu selection
     }
+
+    private void attachImage() {
+        Intent i = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(i, PICK_IMAGE_REQUEST);
+//        Intent intent = new Intent();
+//        // Show only images, no videos or anything else
+//        intent.setType("image/*");
+//        intent.setAction(Intent.ACTION_PICK);
+//        // Always show the chooser (if there are multiple options available)
+//        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+    } // end attachImage method
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+
+            Uri uri = data.getData();
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                // Log.d(TAG, String.valueOf(bitmap));
+
+                ImageView imageView = (ImageView) findViewById(R.id.imageView);
+                imageView.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    } // end onActivityResult method
 
     private void finishEditing() {
         String newText = noteEditor.getText().toString().trim();
@@ -236,4 +274,5 @@ public class EditNoteActivity extends AppCompatActivity {
         openInChooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
         startActivity(openInChooser);
     }
-}
+
+} // end EditNoteActivity class

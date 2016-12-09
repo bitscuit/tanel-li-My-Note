@@ -2,6 +2,7 @@ package com.beauty.comp_eng.mynote;
 
 import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.LabeledIntent;
 import android.content.pm.PackageManager;
@@ -9,13 +10,13 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,9 +24,11 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class EditNoteActivity extends AppCompatActivity {
@@ -37,6 +40,7 @@ public class EditNoteActivity extends AppCompatActivity {
     private String noteFilter;
     private String oldText;
     private String oldTitle;
+    private byte[] oldImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +58,38 @@ public class EditNoteActivity extends AppCompatActivity {
         // Allows you to pass complex object as an intent extra
         Uri uri = intent.getParcelableExtra(NoteProvider.CONTENT_ITEM_TYPE);
 
-        // null when uri isn't passed in, else, request to edit note
+        ImageView img = (ImageView) findViewById(R.id.imageView);
+        img.setLongClickable(true);
+        final ImageView finalImg = img;
+        img.setOnLongClickListener(new ImageView.OnLongClickListener() {
 
+            @Override
+            public boolean onLongClick(View v) {
+                final AlertDialog.Builder b = new AlertDialog.Builder(EditNoteActivity.this);
+                b.setIcon(android.R.drawable.ic_dialog_alert);
+                b.setMessage("Delete?");
+                b.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        finalImg.setImageResource(0);
+                    }
+                });
+                b.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+
+                    }
+                });
+                b.show();
+                return true;
+            }
+        });
+        img.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //your stuff
+            }
+        });
+
+        // null when uri isn't passed in, else, request to edit note
         if (uri == null) {
             action = Intent.ACTION_INSERT;
             setTitle(getString(R.string.new_note));
@@ -67,8 +101,17 @@ public class EditNoteActivity extends AppCompatActivity {
             cursor.moveToFirst();
             oldText = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_BODY));  // gets text of selected note
             noteEditor.setText(oldText);    // sets the text in EditNoteActivity activity to the old text for editing
+
             oldTitle = cursor.getString(cursor.getColumnIndex(DBOpenHelper.NOTE_TITLE));
             titleEditor.setText(oldTitle);
+            img = (ImageView) findViewById(R.id.imageView);
+            oldImage = cursor.getBlob(cursor.getColumnIndex("noteImage"));
+            if (oldImage == null) {
+                Log.d("Img", "image NOT received");
+            } else {
+                img.setImageBitmap(DbBitmapUtility.getImage(oldImage));
+                Log.d("Img", "image received");
+            }
             noteEditor.requestFocus();      // sends cursor to end of text
             cursor.close();
         }
@@ -104,39 +147,57 @@ public class EditNoteActivity extends AppCompatActivity {
     }
 
     private void attachImage() {
-        Intent i = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(i, PICK_IMAGE_REQUEST);
-//        Intent intent = new Intent();
-//        // Show only images, no videos or anything else
-//        intent.setType("image/*");
-//        intent.setAction(Intent.ACTION_PICK);
-//        // Always show the chooser (if there are multiple options available)
-//        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+//        Intent i = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//        startActivityForResult(i, PICK_IMAGE_REQUEST);
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"),1);
     } // end attachImage method
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+//        super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-
-            Uri uri = data.getData();
-
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                // Log.d(TAG, String.valueOf(bitmap));
-
-                ImageView imageView = (ImageView) findViewById(R.id.imageView);
-                imageView.setImageBitmap(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 1) {
+                Uri currImageURI = data.getData();
+                Log.d("Img", getRealPathFromURI(currImageURI));
             }
         }
+//        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+//            Uri uri = data.getData();
+//
+//            try {
+//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+//                // Log.d(TAG, String.valueOf(bitmap));
+//
+//                ImageView imageView = (ImageView) findViewById(R.id.imageView);
+//                imageView.setImageBitmap(bitmap);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
     } // end onActivityResult method
 
     private void finishEditing() {
         String newText = noteEditor.getText().toString().trim();
         String newTitle = titleEditor.getText().toString().trim();
+        ImageView img = (ImageView) findViewById(R.id.imageView);
+
+        byte[] newImage;
+        if (img.getDrawable() != null) {
+            newImage = null;
+
+            Intent data = getIntent();
+            Uri selectedImageURI = data.getData();
+            File imageFile = new File(getRealPathFromURI(selectedImageURI));
+//            Uri selectedImageURI =
+            // DO STUFF
+
+        } else {
+            newImage = null;
+        }
 
         switch (action) {
             case Intent.ACTION_INSERT:
@@ -156,9 +217,9 @@ public class EditNoteActivity extends AppCompatActivity {
                 }
                 break;
             case Intent.ACTION_EDIT:
-                if (newText.length() == 0 && newTitle.length() == 0) {
+                if (newText.length() == 0 && newTitle.length() == 0 && newImage == null) {
                     deleteNote();
-                } else if (oldText.equals(newText) && oldTitle.equals(newTitle)) {
+                } else if (oldText.equals(newText) && oldTitle.equals(newTitle) && Arrays.equals(oldImage, newImage)) {
                     setResult(RESULT_CANCELED);     // if there are no changes, send back the RESULT_CANCELLED value
                 } else {
                     if (newText.length() == 0) {
@@ -173,6 +234,34 @@ public class EditNoteActivity extends AppCompatActivity {
         finish();   // finished with activity, then go to parent activity
     }
 
+    private String getRealPathFromURI(Uri contentUri) {
+//        String result;
+//        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
+//        if (cursor == null) {
+//            result = contentURI.getPath();
+//        } else {
+//            cursor.moveToFirst();
+//            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+//            result = cursor.getString(idx);
+//            cursor.close();
+//        }
+//        Toast.makeText(EditNoteActivity.this, result, Toast.LENGTH_SHORT).show();
+//        return result;
+
+        // can post image
+        String [] proj={MediaStore.Images.Media.DATA};
+        Cursor cursor = getContentResolver().query(contentUri,
+                proj, // Which columns to return
+                null,       // WHERE clause; which rows to return (all rows)
+                null,       // WHERE clause selection arguments (none)
+                null); // Order-by clause (ascending by name)
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+
+        return cursor.getString(column_index);
+
+    } // end getRealPathFromURI method
+
     private void deleteNote() {
         getContentResolver().delete(NoteProvider.CONTENT_URI, noteFilter, null);
         Toast.makeText(this, "Note Deleted", Toast.LENGTH_SHORT).show();
@@ -182,8 +271,23 @@ public class EditNoteActivity extends AppCompatActivity {
 
     private void updateNote(String noteText, String titleText) {
         ContentValues values = new ContentValues();
+        ImageView img = (ImageView) findViewById(R.id.imageView);
+
+        byte[] data;
+        if (img.getDrawable() != null) {
+            Log.d("Img", "updateNote ----- image here");
+            data = null;
+
+            // DO STUFF
+
+        } else {
+            Log.d("Img", "updateNote ----- image not here");
+            data = null;
+        }
         values.put(DBOpenHelper.NOTE_BODY, noteText);
         values.put(DBOpenHelper.NOTE_TITLE, titleText);
+        values.put(DBOpenHelper.NOTE_IMAGE, data);
+
         // reusing noteFilter value to make sure you're only updating 1 selected row
         getContentResolver().update(NoteProvider.CONTENT_URI, values, noteFilter, null);
         Toast.makeText(this, R.string.note_updated, Toast.LENGTH_SHORT).show();
@@ -193,8 +297,18 @@ public class EditNoteActivity extends AppCompatActivity {
     // Code from MainActivity insertNote method
     private void insertNote(String noteText, String titleText) {
         ContentValues values = new ContentValues();
+        ImageView img = (ImageView) findViewById(R.id.imageView);
+        byte[] data;
+        if (img.getDrawable() != null) {
+            Log.d("Img", "updateNote ----- image here");
+            data = null;
+        } else {
+            Log.d("Img", "updateNote ----- image not here");
+            data = null;
+        }
         values.put(DBOpenHelper.NOTE_BODY, noteText);
         values.put(DBOpenHelper.NOTE_TITLE, titleText);
+        values.put(DBOpenHelper.NOTE_IMAGE, data);
         getContentResolver().insert(NoteProvider.CONTENT_URI, values);  // insert method returns Uri but we can ignore it
         setResult(RESULT_OK);   // means the operation that was requested is completed
     }
@@ -202,23 +316,10 @@ public class EditNoteActivity extends AppCompatActivity {
     // When Android back button is pressed (toolbar back button in onOptionsItemSelected method
     @Override
     public void onBackPressed() {
+
+        Log.d("Img", "onBackPressed");
         finishEditing();
     }
-
-//    public void sendNote(View view) {
-//        Intent i = new Intent(Intent.ACTION_SEND);
-//        i.setType("message/rfc822");
-//        i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"m_tanel@live.ca"});
-//        i.putExtra(Intent.EXTRA_SUBJECT, titleEditor.getText().toString());
-//        i.putExtra(Intent.EXTRA_TEXT   , noteEditor.getText().toString());
-//        try {
-//            startActivity(Intent.createChooser(i, "Send mail..."));
-//        } catch (android.content.ActivityNotFoundException ex) {
-//            Toast.makeText(EditNoteActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
-//        }
-//
-//
-//    }
 
     public void sendNote(View view) {
         Resources resources = getResources();
@@ -273,6 +374,7 @@ public class EditNoteActivity extends AppCompatActivity {
 
         openInChooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents);
         startActivity(openInChooser);
-    }
+
+    } // end sendNote method
 
 } // end EditNoteActivity class
